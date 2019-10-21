@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">My Notes App</string>
+    <string name="to_do">To do</string>
+    <string name="enter_note">Enter a note...</string>
+    <string name="save">Save</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+</resources>
