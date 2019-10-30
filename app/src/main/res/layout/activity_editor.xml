@@ -23,7 +23,7 @@
             tools:ignore="Autofill" />
 
         <EditText
-            android:id="@+id/note"
+            android:id="@+id/content"
             android:layout_below="@id/title"
             android:hint="@string/enter_note"
             android:inputType="textMultiLine"
@@ -36,7 +36,7 @@
 
         <com.thebluealliance.spectrum.SpectrumPalette
             android:id="@+id/palette"
-            android:layout_below="@id/note"
+            android:layout_below="@id/content"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="20dp"
             android:layout_width="match_parent"

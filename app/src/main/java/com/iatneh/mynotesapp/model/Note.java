@@ -1,19 +1,41 @@
 package com.iatneh.mynotesapp.model;
 
-import java.util.Date;
-
 public class Note {
+    public int Id;
     public String Title;
-    public String Note;
+    public String Content;
     public int Color;
     public String Date;
 
-    public Note(String title, String note, int color, String date) {
-        Title = title;
-        Note = note;
-        Color = color;
-        Date = date;
+    public Note()
+    {
+
     }
+
+    public Note(String title, String content, String date, int color) {
+        Title = title;
+        Content = content;
+        Date = date;
+        Color = color;
+    }
+
+    public Note(int id, String title, String content, String date, int color) {
+        Id = id;
+        Title = title;
+        Content = content;
+        Date = date;
+        Color = color;
+    }
+
+    public int getId() {
+        return Id;
+    }
+
+    public void setId(int id) {
+        Id = id;
+    }
+
+
 
     public String getTitle() {
         return Title;
@@ -23,12 +45,12 @@ public class Note {
         Title = title;
     }
 
-    public String getNote() {
-        return Note;
+    public String getContent() {
+        return Content;
     }
 
-    public void setNote(String note) {
-        Note = note;
+    public void setContent(String content) {
+        Content = content;
     }
 
     public int getColor() {
@@ -51,7 +73,7 @@ public class Note {
     public String toString() {
         return "Note{" +
                 "Title='" + Title + '\'' +
-                ", Note='" + Note + '\'' +
+                ", Content='" + Content + '\'' +
                 ", Color=" + Color +
                 ", Date='" + Date + '\'' +
                 '}';

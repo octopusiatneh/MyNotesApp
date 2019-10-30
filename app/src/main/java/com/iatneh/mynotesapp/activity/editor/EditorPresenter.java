@@ -1,56 +1,41 @@
 package com.iatneh.mynotesapp.activity.editor;
+import com.iatneh.mynotesapp.database.DatabaseHelper;
 
-import android.util.Log;
-
-import com.iatneh.mynotesapp.activity.main.MainActivity;
-import com.iatneh.mynotesapp.model.Note;
-
-import static com.iatneh.mynotesapp.activity.main.MainActivity.adapter;
-import static com.iatneh.mynotesapp.activity.main.MainActivity.noteList;
 
 public class EditorPresenter {
 
+    DatabaseHelper db;
     private EditorView view;
 
-    public EditorPresenter(EditorView view) {
+    public EditorPresenter(EditorView view, DatabaseHelper db) {
         this.view = view;
+        this.db = db;
     }
 
-    void SaveNote(Note note) {
+    void SaveNote(String title, String content, String date, int color) {
         try {
-            noteList.add(note);
+            db.addNote(title, content, date, color);
             view.onAddSuccess("Add successfully");
-            for(Note note1 : noteList)
-            {
-                Log.e("ADD",note1.toString());
-            }
         } catch (Error e) {
             view.onAddError(e.getMessage());
         }
     }
 
-    void UpdateNote(Note note, int position) {
+    void UpdateNote(int id, String title, String content, String date, int color) {
         try {
-            noteList.set(position,note);
-            adapter.notifyItemChanged(position);
-            adapter.notifyDataSetChanged();
+            db.updateNote(id, title, content, date, color);
             view.onAddSuccess("Update successfully");
-            for(Note note2 : noteList)
-            {
-                Log.e("UPDATE",note2.toString());
-            }
 
         } catch (Error e) {
             view.onAddError(e.getMessage());
         }
     }
 
-    void DeleteNote(int position) {
+    void DeleteNote(int id) {
         try {
-            noteList.remove(position);
-            adapter.notifyItemRemoved(position);
-            adapter.notifyDataSetChanged();
+            db.deleteNote(id);
             view.onAddSuccess("Delete successfully");
+
         } catch (Error e) {
             view.onAddError(e.getMessage());
         }

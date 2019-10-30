@@ -16,28 +16,33 @@ import com.iatneh.mynotesapp.model.Note;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.iatneh.mynotesapp.activity.main.MainActivity.noteList;
+
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
-    Context context;
+    Context mContext;
     ItemClickListener itemClickListener;
-    List<Note> mData;
-    public NoteAdapter(Context context, List<Note> mData) {
-        this.context = context;
-        this.mData = mData;
+
+    private List<Note> mNoteList;
+
+    public NoteAdapter(Context context, List<Note> mNoteList) {
+        mContext = context;
+        this.mNoteList = mNoteList;
+
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_note, parent, false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.item_note, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Note note_item = mData.get(position);
+        Note note_item = mNoteList.get(position);
         holder.tv_title.setText(note_item.getTitle());
-        holder.tv_note.setText(note_item.getNote());
+        holder.tv_note.setText(note_item.getContent());
         holder.tv_date.setText(note_item.getDate());
         holder.card_item.setCardBackgroundColor(note_item.getColor());
 
@@ -46,7 +51,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return mData.size();
+        return mNoteList.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -68,9 +73,25 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         void onItemClick(Note note, int position);
     }
 
-    public List<Note> getData() {
-        return mData;
+    // Filter Class
+    public void filter(String charText) {
+        charText = charText.toLowerCase();
+        List<Note> mFilteredList;
+        if(charText.isEmpty()) {
+            mFilteredList = noteList;
+        } else {
+            List<Note> filteredList = new ArrayList<>();
+            for(Note row : noteList) {
+                if(row.getTitle().toLowerCase().contains(charText)) {
+                    filteredList.add(row);
+                }
+            }
+
+            mFilteredList = filteredList;
+        }
+
+        mNoteList = mFilteredList;
+
+        notifyDataSetChanged();
     }
-
-
 }

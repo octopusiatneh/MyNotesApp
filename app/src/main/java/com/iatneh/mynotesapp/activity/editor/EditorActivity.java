@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,22 +16,22 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.iatneh.mynotesapp.R;
-import com.iatneh.mynotesapp.model.Note;
+import com.iatneh.mynotesapp.database.DatabaseHelper;
 import com.thebluealliance.spectrum.SpectrumPalette;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import static com.iatneh.mynotesapp.activity.main.MainActivity.noteList;
-
 public class EditorActivity extends AppCompatActivity implements EditorView {
 
-    EditText et_title, et_note;
+    EditText et_title, et_content;
     SpectrumPalette palette;
-    int color, id, pos;
+    int color, id;
 
-    String title, note;
+    DatabaseHelper db;
+
+    String title, content;
     Menu actionMenu;
 
     EditorPresenter presenter;
@@ -39,10 +40,12 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
+        db = new DatabaseHelper(this);
+        presenter = new EditorPresenter(this, db);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         et_title = findViewById(R.id.title);
-        et_note = findViewById(R.id.note);
+        et_content = findViewById(R.id.content);
         palette = findViewById(R.id.palette);
 
         palette.setOnColorSelectedListener(
@@ -53,13 +56,10 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
         palette.setSelectedColor(ContextCompat.getColor(this, R.color.white));
         color = ContextCompat.getColor(this, R.color.white);
 
-        presenter = new EditorPresenter(this);
-
         Intent intent = getIntent();
-        pos = intent.getIntExtra("pos", -1);
-        Log.e("POSITION", String.valueOf(pos));
+        id = intent.getIntExtra("id", -1);
         title = intent.getStringExtra("title");
-        note = intent.getStringExtra("note");
+        content = intent.getStringExtra("content");
         color = intent.getIntExtra("color", 0);
 
         setDataFromIntentExtra();
@@ -67,9 +67,9 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
 
     private void setDataFromIntentExtra() {
 
-        if (pos != -1) {
+        if (id != -1) {
             et_title.setText(title);
-            et_note.setText(note);
+            et_content.setText(content);
             palette.setSelectedColor(color);
 
             getSupportActionBar().setTitle("Update Note");
@@ -84,15 +84,15 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
 
     private void editMode() {
         et_title.setFocusableInTouchMode(true);
-        et_note.setFocusableInTouchMode(true);
+        et_content.setFocusableInTouchMode(true);
         palette.setEnabled(true);
     }
 
     private void readMode() {
         et_title.setFocusableInTouchMode(false);
-        et_note.setFocusableInTouchMode(false);
+        et_content.setFocusableInTouchMode(false);
         et_title.setFocusable(false);
-        et_note.setFocusable(false);
+        et_content.setFocusable(false);
         palette.setEnabled(false);
     }
 
@@ -102,7 +102,7 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
         inflater.inflate(R.menu.menu_editor, menu);
         actionMenu = menu;
 
-        if (pos != -1) {
+        if (id != -1) {
             actionMenu.findItem(R.id.edit).setVisible(true);
             actionMenu.findItem(R.id.delete).setVisible(true);
             actionMenu.findItem(R.id.save).setVisible(false);
@@ -119,7 +119,7 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         String title = et_title.getText().toString().trim();
-        String note = et_note.getText().toString().trim();
+        String content = et_content.getText().toString().trim();
         Date c = Calendar.getInstance().getTime();
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         String date = df.format(c);
@@ -127,6 +127,7 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
 
         switch (item.getItemId()) {
             case android.R.id.home:
+                setResult(RESULT_CANCELED);
                 this.finish();
                 return true;
 
@@ -134,11 +135,10 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
                 //Save
                 if (title.isEmpty()) {
                     et_title.setError("Please enter a title");
-                } else if (note.isEmpty()) {
-                    et_note.setError("Please enter a note");
+                } else if (content.isEmpty()) {
+                    et_content.setError("Please enter a note");
                 } else {
-                    Note noteObj = new Note(title, note, color, date);
-                    presenter.SaveNote(noteObj);
+                    presenter.SaveNote(title, content, date, color);
                 }
                 return true;
             case R.id.edit:
@@ -155,11 +155,13 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
                 //Update
                 if (title.isEmpty()) {
                     et_title.setError("Please enter a title");
-                } else if (note.isEmpty()) {
-                    et_note.setError("Please enter a note");
+                } else if (content.isEmpty()) {
+                    et_content.setError("Please enter a note");
                 } else {
-                    Note noteObj = new Note(title, note, color, date);
-                    presenter.UpdateNote(noteObj, pos);
+                    presenter.UpdateNote(id, title, content, date, color);
+                    setResult(Activity.RESULT_OK);
+
+                    finish();
                 }
                 return true;
 
@@ -169,11 +171,13 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
                 alertDialog.setMessage("Are you sure?");
                 alertDialog.setNegativeButton("Yes", (dialog, which) -> {
                     dialog.dismiss();
-                    presenter.DeleteNote(pos);
+                    presenter.DeleteNote(id);
+                    setResult(Activity.RESULT_OK);
+
+                    finish();
                 });
                 alertDialog.setPositiveButton("Cancel",
                         (dialog, which) -> dialog.dismiss());
-
                 alertDialog.show();
                 return true;
             default:
@@ -183,10 +187,21 @@ public class EditorActivity extends AppCompatActivity implements EditorView {
     }
 
     @Override
+    public void onBackPressed() {
+
+        // đặt resultCode là Activity.RESULT_CANCELED thể hiện
+        // đã thất bại khi người dùng click vào nút Back.
+        // Khi này sẽ không trả về data.
+        setResult(Activity.RESULT_CANCELED);
+        super.onBackPressed();
+    }
+
+    @Override
     public void onAddSuccess(String message) {
         Toast.makeText(EditorActivity.this,
                 message,
                 Toast.LENGTH_SHORT).show();
+        setResult(RESULT_OK);
         finish();
     }
 
