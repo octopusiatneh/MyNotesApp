@@ -1,6 +1,8 @@
 package com.iatneh.mynotesapp.model;
 
-public class Note {
+import java.io.Serializable;
+
+public class Note implements Comparable<Note>, Serializable {
     public int Id;
     public String Title;
     public String Content;
@@ -77,5 +79,10 @@ public class Note {
                 ", Color=" + Color +
                 ", Date='" + Date + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Note o) {
+        return Title.compareToIgnoreCase(o.getTitle());
     }
 }

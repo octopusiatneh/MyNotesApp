@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="example.javatpoint.com.optionmenu.MainActivity">
+    <item  android:id="@+id/sort"
+        android:title="Sort A -> Z"
+        app:showAsAction="withText"/>
+
+    <item  android:id="@+id/reverse"
+        android:title="Sort Z -> A"
+        app:showAsAction="withText"/>
+</menu>
